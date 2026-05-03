@@ -9,6 +9,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String selectedCategory = "All";
+  String searchText = "";
+
+  final TextEditingController searchController = TextEditingController();
 
   final List<Map<String, dynamic>> coffees = [
     {"name": "Espresso", "type": "Espresso", "price": 15000, "image": "coffee2.jpg"},
@@ -38,9 +41,17 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final filtered = selectedCategory == "All"
-        ? coffees
-        : coffees.where((c) => c["type"] == selectedCategory).toList();
+    final filtered = coffees.where((c) {
+      final matchCategory =
+          selectedCategory == "All" || c["type"] == selectedCategory;
+
+      final matchSearch = c["name"]
+          .toString()
+          .toLowerCase()
+          .contains(searchText.toLowerCase());
+
+      return matchCategory && matchSearch;
+    }).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFF181818),
@@ -56,10 +67,16 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
 
-            // 🔍 SEARCH
+            // 🔍 SEARCH (REAL TIME)
             TextField(
+              controller: searchController,
+              onChanged: (value) {
+                setState(() {
+                  searchText = value;
+                });
+              },
               decoration: InputDecoration(
-                hintText: "Search...",
+                hintText: "Search coffee... (e.g latte, espresso)",
                 filled: true,
                 fillColor: Colors.grey[850],
                 prefixIcon: const Icon(Icons.search),
@@ -141,13 +158,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ☕ CARD (FIXED: no add button + tighter layout)
+  // ☕ CARD
   Widget coffeeCard(String name, int price, String image) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(16),
-
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.4),
@@ -156,14 +172,13 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-
       padding: const EdgeInsets.all(6),
 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          // 🖼 IMAGE (closer + clean)
+          // 🖼 IMAGE
           ClipRRect(
             borderRadius: BorderRadius.circular(14),
             child: AspectRatio(
@@ -175,9 +190,8 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
-          const SizedBox(height: 4), // 👈 IMAGE + TEXT ойр
+          const SizedBox(height: 4),
 
-          // ☕ NAME
           Text(
             name,
             style: const TextStyle(
@@ -189,7 +203,6 @@ class _HomePageState extends State<HomePage> {
 
           const SizedBox(height: 2),
 
-          // 💰 PRICE
           Text(
             "$price ₮",
             style: const TextStyle(
