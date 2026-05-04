@@ -8,34 +8,9 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage>
-    with SingleTickerProviderStateMixin {
+class _LoginPageState extends State<LoginPage> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
-
-  late AnimationController _controller;
-  late Animation<double> _fade;
-  late Animation<double> _scale;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    );
-
-    _fade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-
-    _scale = Tween<double>(begin: 0.85, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
-    );
-
-    _controller.forward();
-  }
 
   void login() {
     String username = usernameController.text.trim();
@@ -64,7 +39,8 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   void dispose() {
-    _controller.dispose();
+    usernameController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
@@ -74,148 +50,213 @@ class _LoginPageState extends State<LoginPage>
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFF5F1EC), // beige
-              Color(0xFFD7CCC8), // soft brown
-              Color(0xFFBCAAA4), // deeper brown
+              Color(0xFFF5EDE4),
+              Color(0xFFDBC9B8),
+              Color(0xFF9C6644),
             ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
           ),
         ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              // Floating coffee beans decoration
+              Positioned(
+                top: 60,
+                left: 30,
+                child: _coffeeBean(),
+              ),
+              Positioned(
+                top: 120,
+                right: 50,
+                child: _coffeeBean(size: 42),
+              ),
+              Positioned(
+                top: 220,
+                left: 80,
+                child: _coffeeBean(size: 35),
+              ),
+              Positioned(
+                bottom: 180,
+                right: 40,
+                child: _coffeeBean(size: 48),
+              ),
+              Positioned(
+                bottom: 250,
+                left: 40,
+                child: _coffeeBean(size: 30),
+              ),
 
-        child: Center(
-          child: FadeTransition(
-            opacity: _fade,
-            child: ScaleTransition(
-              scale: _scale,
-              child: Container(
-                width: 340,
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.85),
-                  borderRadius: BorderRadius.circular(25),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 25,
-                      offset: const Offset(0, 15),
-                    ),
-                  ],
-                  border: Border.all(
-                    color: const Color(0xFF8D6E63),
-                    width: 1.2,
-                  ),
-                ),
-
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-
-                    // 👇 image / logo
-                    Container(
-                      height: 110,
-                      width: 110,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF6D4C41),
-                            Color(0xFF3E2723),
-                          ],
+              // Main Login Card
+              Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                  child: Container(
+                    width: double.infinity,
+                    constraints: const BoxConstraints(maxWidth: 380),
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3C2F2F).withOpacity(0.95),
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.4),
+                          blurRadius: 40,
+                          offset: const Offset(0, 20),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.brown.withOpacity(0.4),
-                            blurRadius: 20,
-                          )
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.coffee,
-                        size: 55,
-                        color: Colors.white,
-                      ),
+                      ],
                     ),
-
-                    const SizedBox(height: 18),
-
-                    const Text(
-                      "COFFEE LOGIN",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
-                        color: Color(0xFF3E2723),
-                      ),
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    // username
-                    TextField(
-                      controller: usernameController,
-                      style: const TextStyle(color: Color(0xFF3E2723)),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: const Color(0xFFF5F1EC),
-                        prefixIcon: const Icon(Icons.person),
-                        hintText: "Username / Email",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    // password
-                    TextField(
-                      controller: passwordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: const Color(0xFFF5F1EC),
-                        prefixIcon: const Icon(Icons.lock),
-                        hintText: "Password",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    // button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6D4C41),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          elevation: 8,
-                        ),
-                        child: const Text(
-                          "LOGIN",
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "Log in",
                           style: TextStyle(
-                            fontSize: 16,
-                            letterSpacing: 2,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          "Sign in to your account",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white70,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+
+                        // Username
+                        _buildTextField(
+                          controller: usernameController,
+                          hint: "Username",
+                          icon: Icons.person_outline,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Password
+                        _buildTextField(
+                          controller: passwordController,
+                          hint: "Password",
+                          icon: Icons.lock_outline,
+                          isPassword: true,
+                        ),
+
+                        const SizedBox(height: 12),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {},
+                            child: const Text(
+                              "Forgot my password?",
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Sign In Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: login,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFf4a261),
+                              foregroundColor: Colors.black87,
+                              elevation: 8,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text(
+                              "Sign In",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Register
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              "Don't have an account? ",
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                // Register page руу шилжүүлэх
+                              },
+                              child: const Text(
+                                "Register",
+                                style: TextStyle(
+                                  color: Color(0xFFf4a261),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.1),
+        prefixIcon: Icon(icon, color: Colors.white70),
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.white54),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFf4a261), width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 18),
+      ),
+    );
+  }
+
+  Widget _coffeeBean({double size = 38}) {
+    return Icon(
+      Icons.coffee_rounded,
+      size: size,
+      color: Colors.brown.shade900.withOpacity(0.75),
     );
   }
 }
