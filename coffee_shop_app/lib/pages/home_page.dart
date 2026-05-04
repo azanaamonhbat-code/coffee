@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,6 +14,11 @@ class _HomePageState extends State<HomePage> {
 
   final TextEditingController searchController = TextEditingController();
 
+  // 🔥 API data
+  List<dynamic> apiCoffees = [];
+  bool isLoading = true;
+
+  // 🔥 Local data (backup)
   final List<Map<String, dynamic>> coffees = [
     {"name": "Espresso", "type": "Espresso", "price": 15000, "image": "coffee2.jpg"},
     {"name": "Americano", "type": "Espresso", "price": 12000, "image": "coffee3.jpg"},
@@ -22,26 +28,37 @@ class _HomePageState extends State<HomePage> {
 
     {"name": "Cappuccino", "type": "Cappuccino", "price": 16000, "image": "coffee4.jpg"},
     {"name": "Flat White", "type": "Cappuccino", "price": 17000, "image": "coffee9.jpg"},
-    {"name": "Iced Cappuccino", "type": "Cappuccino", "price": 18000, "image": "coffee13.jpg"},
-    {"name": "Dry Cappuccino", "type": "Cappuccino", "price": 17500, "image": "coffee14.jpg"},
-    {"name": "Double Cappuccino", "type": "Cappuccino", "price": 18500, "image": "coffee15.jpg"},
-
     {"name": "Latte", "type": "Latte", "price": 18000, "image": "coffee7.jpg"},
-    {"name": "Caramel Latte", "type": "Latte", "price": 20000, "image": "coffee6.jpg"},
-    {"name": "Vanilla Latte", "type": "Latte", "price": 19500, "image": "coffee16.jpg"},
-    {"name": "Hazelnut Latte", "type": "Latte", "price": 20500, "image": "coffee17.jpg"},
-    {"name": "Ice Latte", "type": "Latte", "price": 18500, "image": "coffee18.jpg"},
-
-    {"name": "Strawberry Smoothie", "type": "Smoothie", "price": 14000, "image": "coffee19.jpg"},
-    {"name": "Mango Smoothie", "type": "Smoothie", "price": 15000, "image": "coffee20.jpg"},
-    {"name": "Banana Smoothie", "type": "Smoothie", "price": 13000, "image": "coffee21.jpg"},
-    {"name": "Blueberry Smoothie", "type": "Smoothie", "price": 16000, "image": "coffee22.jpg"},
-    {"name": "Green Detox Smoothie", "type": "Smoothie", "price": 17000, "image": "coffee23.jpg"},
+    {"name": "Smoothie", "type": "Smoothie", "price": 14000, "image": "coffee19.jpg"},
   ];
 
   @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  // 🚀 API ачаалах
+  void loadData() async {
+    try {
+      final data = await ApiService.getCoffees();
+
+      setState(() {
+        apiCoffees = data;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final filtered = coffees.where((c) {
+    final dataSource = apiCoffees.isNotEmpty ? apiCoffees : coffees;
+
+    final filtered = dataSource.where((c) {
       final matchCategory =
           selectedCategory == "All" || c["type"] == selectedCategory;
 
@@ -62,72 +79,76 @@ class _HomePageState extends State<HomePage> {
         title: const Text("Find your coffee"),
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: [
-
-            // 🔍 SEARCH (REAL TIME)
-            TextField(
-              controller: searchController,
-              onChanged: (value) {
-                setState(() {
-                  searchText = value;
-                });
-              },
-              decoration: InputDecoration(
-                hintText: "Search coffee... (e.g latte, espresso)",
-                filled: true,
-                fillColor: Colors.grey[850],
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // ☕ CATEGORY
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
                 children: [
-                  category("All"),
-                  category("Espresso"),
-                  category("Cappuccino"),
-                  category("Latte"),
-                  category("Smoothie"),
+
+                  // 🔍 SEARCH
+                  TextField(
+                    controller: searchController,
+                    onChanged: (value) {
+                      setState(() {
+                        searchText = value;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: "Search coffee...",
+                      filled: true,
+                      fillColor: Colors.grey[850],
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // ☕ CATEGORY
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        category("All"),
+                        category("Espresso"),
+                        category("Cappuccino"),
+                        category("Latte"),
+                        category("Smoothie"),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // 🧱 GRID
+                  Expanded(
+                    child: GridView.builder(
+                      itemCount: filtered.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.80,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                      ),
+                      itemBuilder: (context, index) {
+                        final coffee = filtered[index];
+
+                        return coffeeCard(
+                          coffee["name"],
+                          coffee["price"],
+                          coffee["image"],
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
-
-            const SizedBox(height: 8),
-
-            // 🧱 GRID
-            Expanded(
-              child: GridView.builder(
-                itemCount: filtered.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.80,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
-                itemBuilder: (context, index) {
-                  final coffee = filtered[index];
-                  return coffeeCard(
-                    coffee["name"],
-                    coffee["price"],
-                    coffee["image"],
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -178,7 +199,6 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          // 🖼 IMAGE
           ClipRRect(
             borderRadius: BorderRadius.circular(14),
             child: AspectRatio(
