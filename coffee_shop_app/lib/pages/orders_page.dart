@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:coffee_shop_app/models/coffee.dart';
+import '../services/api_service.dart';
 
 List<Coffee> orders = [];
 
@@ -13,7 +14,8 @@ class OrdersPage extends StatefulWidget {
 class _OrdersPageState extends State<OrdersPage> {
   final List<String> sizes = ["Жижиг", "Дунд", "Том"];
 
-  // ☕ MENU (ИЛҮҮ ОЛОН КОФЕ НЭМСЭН)
+  bool isLoading = false;
+
   final List<Coffee> menu = [
     Coffee(
       name: "Americano",
@@ -36,31 +38,9 @@ class _OrdersPageState extends State<OrdersPage> {
       price: 17000,
       image: "https://images.unsplash.com/photo-1521302080334-4bebac2763a6",
     ),
-
-    // ➕ НЭМСЭН КОФЕНҮҮД
-    Coffee(
-      name: "Mocha",
-      description: "Шоколадтай кофе",
-      details: "Какао + кофе + сүү",
-      price: 20000,
-      image: "https://images.unsplash.com/photo-1512568400610-62da28bc8a13",
-    ),
-    Coffee(
-      name: "Espresso",
-      description: "Хүчтэй жижиг кофе",
-      details: "Pure coffee shot",
-      price: 12000,
-      image: "https://images.unsplash.com/photo-1510626176961-4b57d4fbad03",
-    ),
-    Coffee(
-      name: "Ice Coffee",
-      description: "Хүйтэн кофе",
-      details: "Ice + кофе + сүү",
-      price: 16000,
-      image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735",
-    ),
   ];
 
+  // 🚀 LOCAL ADD
   void addOrder(Coffee coffee) {
     setState(() {
       orders.add(coffee);
@@ -77,6 +57,19 @@ class _OrdersPageState extends State<OrdersPage> {
     setState(() {
       orders.removeAt(index);
     });
+  }
+
+  // 🚀 SEND TO NODE.JS
+  void sendToServer(Coffee coffee) async {
+    try {
+      await ApiService.sendOrder({
+        "name": coffee.name,
+        "details": coffee.details,
+        "price": coffee.price,
+      });
+    } catch (e) {
+      print("Server error: $e");
+    }
   }
 
   void openOrderForm({Coffee? coffee, int? index}) {
@@ -127,7 +120,6 @@ class _OrdersPageState extends State<OrdersPage> {
 
                       const SizedBox(height: 15),
 
-                      // SIZE
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -151,7 +143,6 @@ class _OrdersPageState extends State<OrdersPage> {
 
                       const SizedBox(height: 10),
 
-                      // QTY
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -160,9 +151,7 @@ class _OrdersPageState extends State<OrdersPage> {
                             children: [
                               IconButton(
                                 onPressed: () {
-                                  if (qty > 1) {
-                                    setModalState(() => qty--);
-                                  }
+                                  if (qty > 1) setModalState(() => qty--);
                                 },
                                 icon: const Icon(Icons.remove_circle),
                               ),
@@ -189,8 +178,7 @@ class _OrdersPageState extends State<OrdersPage> {
                           final coffeeOrder = Coffee(
                             name: nameController.text,
                             description: "Захиалга",
-                            details:
-                                "Хэмжээ: $selectedSize | Тоо: $qty",
+                            details: "Хэмжээ: $selectedSize | Тоо: $qty",
                             price: 0,
                             image:
                                 "https://images.unsplash.com/photo-1511920170033-f8396924c348",
@@ -201,6 +189,9 @@ class _OrdersPageState extends State<OrdersPage> {
                           } else {
                             editOrder(index!, coffeeOrder);
                           }
+
+                          // 🚀 SERVER рүү илгээх
+                          sendToServer(coffeeOrder);
 
                           Navigator.pop(context);
                         },
@@ -290,10 +281,7 @@ class _OrdersPageState extends State<OrdersPage> {
             padding: EdgeInsets.all(10),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                "☕ Цэс",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              child: Text("☕ Цэс"),
             ),
           ),
 
@@ -316,24 +304,9 @@ class _OrdersPageState extends State<OrdersPage> {
                     ),
                     child: Column(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(15),
-                          child: Image.network(
-                            coffee.image,
-                            height: 90,
-                            width: 140,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
+                        Image.network(coffee.image, height: 90, fit: BoxFit.cover),
                         Text(coffee.name),
-                        Text(
-                          "${coffee.price} ₮",
-                          style: const TextStyle(
-                            color: Colors.brown,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        Text("${coffee.price} ₮"),
                       ],
                     ),
                   ),
@@ -344,16 +317,7 @@ class _OrdersPageState extends State<OrdersPage> {
 
           const Divider(),
 
-          const Padding(
-            padding: EdgeInsets.all(10),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "🛒 Захиалга",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
+          const Text("🛒 Захиалга"),
 
           Expanded(
             child: orders.isEmpty
@@ -363,28 +327,22 @@ class _OrdersPageState extends State<OrdersPage> {
                     itemBuilder: (context, index) {
                       final order = orders[index];
 
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        child: ListTile(
-                          title: Text(order.name),
-                          subtitle: Text(order.details),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit,
-                                    color: Colors.orange),
-                                onPressed: () => openOrderForm(
-                                    coffee: order, index: index),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete,
-                                    color: Colors.red),
-                                onPressed: () => deleteOrder(index),
-                              ),
-                            ],
-                          ),
+                      return ListTile(
+                        title: Text(order.name),
+                        subtitle: Text(order.details),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () =>
+                                  openOrderForm(coffee: order, index: index),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () => deleteOrder(index),
+                            ),
+                          ],
                         ),
                       );
                     },
