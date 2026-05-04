@@ -14,11 +14,9 @@ class _HomePageState extends State<HomePage> {
 
   final TextEditingController searchController = TextEditingController();
 
-  // 🔥 API data
   List<dynamic> apiCoffees = [];
   bool isLoading = true;
 
-  // 🔥 Local data (backup)
   final List<Map<String, dynamic>> coffees = [
     {"name": "Espresso", "type": "Espresso", "price": 15000, "image": "coffee2.jpg"},
     {"name": "Americano", "type": "Espresso", "price": 12000, "image": "coffee3.jpg"},
@@ -38,20 +36,84 @@ class _HomePageState extends State<HomePage> {
     loadData();
   }
 
-  // 🚀 API ачаалах
   void loadData() async {
     try {
       final data = await ApiService.getCoffees();
-
       setState(() {
         apiCoffees = data;
         isLoading = false;
       });
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
+  }
+
+  void showCoffeeDetail(Map<String, dynamic> coffee) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFFF5F1EC),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    "lib/assets/images/${coffee['image']}",
+                    height: 220,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(Icons.coffee, size: 120, color: Colors.brown),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(coffee['name'], style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.brown)),
+              const SizedBox(height: 8),
+              Text("${coffee['price']} ₮", style: const TextStyle(fontSize: 20, color: Colors.orange, fontWeight: FontWeight.bold)),
+              
+              const Divider(height: 30, color: Colors.brown),
+              const Text("Тайлбар", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown)),
+              const SizedBox(height: 8),
+              Text("${coffee['type']} - Амттай, хүчтэй кофены сонголт.", style: const TextStyle(fontSize: 16, color: Colors.brown)),
+              
+              const SizedBox(height: 20),
+              const Text("Найрлага", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown)),
+              const SizedBox(height: 8),
+              Text(
+                "• Espresso shot\n• ${coffee['type'] == 'Espresso' ? 'Халуун ус / Сүү' : 'Сүү, эспрессо'}\n• Элсэн чихэр (заавал биш)",
+                style: const TextStyle(fontSize: 16, color: Color(0xFF5D4037)),
+              ),
+
+              const SizedBox(height: 30),
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.brown,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Захиалга нэмэгдлээ ☕")));
+                  },
+                  child: const Text("Захиалах", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -59,176 +121,207 @@ class _HomePageState extends State<HomePage> {
     final dataSource = apiCoffees.isNotEmpty ? apiCoffees : coffees;
 
     final filtered = dataSource.where((c) {
-      final matchCategory =
-          selectedCategory == "All" || c["type"] == selectedCategory;
-
-      final matchSearch = c["name"]
-          .toString()
-          .toLowerCase()
-          .contains(searchText.toLowerCase());
-
+      final matchCategory = selectedCategory == "All" || c["type"] == selectedCategory;
+      final matchSearch = c["name"].toString().toLowerCase().contains(searchText.toLowerCase());
       return matchCategory && matchSearch;
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF181818),
-
+      backgroundColor: const Color(0xFFF5F1EC),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF3E2723),
         elevation: 0,
-        title: const Text("Find your coffee"),
+        title: const Text("Find your coffee", style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                children: [
+          ? const Center(child: CircularProgressIndicator(color: Colors.brown))
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Greeting
+                    const Text(
+                      "Good Morning ☕",
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.brown),
+                    ),
+                    const Text(
+                      "Grab your first coffee in the morning",
+                      style: TextStyle(fontSize: 16, color: Colors.brown),
+                    ),
+                    const SizedBox(height: 20),
 
-                  // 🔍 SEARCH
-                  TextField(
-                    controller: searchController,
-                    onChanged: (value) {
-                      setState(() {
-                        searchText = value;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: "Search coffee...",
-                      filled: true,
-                      fillColor: Colors.grey[850],
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
+                    // Search
+                    TextField(
+                      controller: searchController,
+                      onChanged: (value) => setState(() => searchText = value),
+                      decoration: InputDecoration(
+                        hintText: "Search coffee...",
+                        filled: true,
+                        fillColor: Colors.white,
+                        prefixIcon: const Icon(Icons.search, color: Colors.brown),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(color: Color(0xFFBCAAA4)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(color: Colors.brown, width: 2),
+                        ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 8),
+                    const SizedBox(height: 25),
 
-                  // ☕ CATEGORY
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        category("All"),
-                        category("Espresso"),
-                        category("Cappuccino"),
-                        category("Latte"),
-                        category("Smoothie"),
-                      ],
+                    // 3D Category Chips
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          category("All"),
+                          category("Espresso"),
+                          category("Cappuccino"),
+                          category("Latte"),
+                          category("Smoothie"),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 8),
+                    const SizedBox(height: 25),
 
-                  // 🧱 GRID
-                  Expanded(
-                    child: GridView.builder(
+                    // Grid
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: filtered.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        childAspectRatio: 0.80,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
+                        childAspectRatio: 0.78,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
                       ),
                       itemBuilder: (context, index) {
                         final coffee = filtered[index];
-
-                        return coffeeCard(
-                          coffee["name"],
-                          coffee["price"],
-                          coffee["image"],
+                        return GestureDetector(
+                          onTap: () => showCoffeeDetail(coffee),
+                          child: coffeeCard(coffee["name"], coffee["price"], coffee["image"]),
                         );
                       },
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
     );
   }
 
-  // 🟤 CATEGORY
+  // ================== 3D CATEGORY WIDGET ==================
   Widget category(String name) {
     final isActive = selectedCategory == name;
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedCategory = name;
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      onTap: () => setState(() => selectedCategory = name),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 13),
         decoration: BoxDecoration(
-          color: isActive ? Colors.orange : Colors.grey[800],
-          borderRadius: BorderRadius.circular(20),
+          gradient: isActive
+              ? const LinearGradient(
+                  colors: [Color(0xFF3E2723), Color(0xFF5D4037)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : const LinearGradient(
+                  colors: [Colors.white, Color(0xFFF5F1EC)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            // Main shadow
+            BoxShadow(
+              color: Colors.brown.withOpacity(isActive ? 0.45 : 0.18),
+              blurRadius: 10,
+              offset: const Offset(0, 6),
+            ),
+            // Highlight (3D effect)
+            BoxShadow(
+              color: Colors.white.withOpacity(isActive ? 0.25 : 0.7),
+              blurRadius: 8,
+              offset: const Offset(-3, -3),
+            ),
+            if (isActive)
+              BoxShadow(
+                color: const Color(0xFF3E2723).withOpacity(0.5),
+                blurRadius: 12,
+                offset: const Offset(4, 6),
+              ),
+          ],
+          border: Border.all(
+            color: isActive 
+                ? const Color(0xFFBCAAA4) 
+                : const Color(0xFFBCAAA4).withOpacity(0.7),
+            width: isActive ? 2.5 : 1.5,
+          ),
         ),
         child: Text(
           name,
           style: TextStyle(
-            color: isActive ? Colors.black : Colors.white,
+            color: isActive ? Colors.white : Colors.brown.shade800,
+            fontWeight: FontWeight.w600,
+            fontSize: 15.5,
+            letterSpacing: 0.4,
           ),
         ),
       ),
     );
   }
 
-  // ☕ CARD
+  // ================== COFFEE CARD ==================
   Widget coffeeCard(String name, int price, String image) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
-            blurRadius: 8,
+            color: Colors.brown.withOpacity(0.12),
+            blurRadius: 10,
             offset: const Offset(0, 5),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(6),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           ClipRRect(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: AspectRatio(
-              aspectRatio: 1.15,
+              aspectRatio: 1.2,
               child: Image.asset(
                 "lib/assets/images/$image",
                 fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(Icons.coffee, size: 80, color: Colors.brown),
               ),
             ),
           ),
-
-          const SizedBox(height: 4),
-
-          Text(
-            name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-            ),
-          ),
-
-          const SizedBox(height: 2),
-
-          Text(
-            "$price ₮",
-            style: const TextStyle(
-              color: Colors.orange,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold, fontSize: 15)),
+                const SizedBox(height: 6),
+                Text("$price ₮", style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16)),
+              ],
             ),
           ),
         ],

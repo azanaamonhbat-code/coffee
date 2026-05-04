@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:coffee_shop_app/models/coffee.dart';
-import 'package:coffee_shop_app/pages/login_page.dart'; // ✅ ЭНЭ ЧУХАЛ
+import 'package:coffee_shop_app/pages/login_page.dart';
 
 class ProfilePage extends StatelessWidget {
   final String username;
@@ -10,7 +10,7 @@ class ProfilePage extends StatelessWidget {
   void logout(BuildContext context) {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => LoginPage()), // ❌ const АВААГҮЙ
+      MaterialPageRoute(builder: (_) => LoginPage()),
       (route) => false,
     );
   }
@@ -69,65 +69,75 @@ class ProfilePage extends StatelessWidget {
       body: Column(
         children: [
 
-          // ================= PROFILE HEADER =================
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 30),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF3E2723), Color(0xFF6D4C41)],
+          // ===== NEW HEADER (EMOJI AVATAR) =====
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                height: 160,
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF6A5AE0), Color(0xFF8D58BF)],
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(40),
+                    bottomRight: Radius.circular(40),
+                  ),
+                ),
               ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(35),
-                bottomRight: Radius.circular(35),
+
+              Positioned(
+                bottom: -50,
+                left: 0,
+                right: 0,
+                child: Column(
+                  children: [
+
+                    // EMOJI AVATAR
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 10,
+                          )
+                        ],
+                      ),
+                      child: const CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.white,
+                        child: Text(
+                          "👤",
+                          style: TextStyle(fontSize: 50),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    Text(
+                      username,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const Text(
+                      "☕ Coffee Lover",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            child: Column(
-              children: [
-
-                const CircleAvatar(
-                  radius: 45,
-                  backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.person,
-                    size: 60,
-                    color: Color(0xFF3E2723),
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                Text(
-                  username,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 5),
-
-                const Text(
-                  "☕ Coffee Lover",
-                  style: TextStyle(color: Colors.white70),
-                ),
-
-                const SizedBox(height: 15),
-
-                // LOGOUT BUTTON
-                ElevatedButton(
-                  onPressed: () => logout(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                  ),
-                  child: const Text("Logout"),
-                ),
-              ],
-            ),
+            ],
           ),
 
-          const SizedBox(height: 15),
+          const SizedBox(height: 70),
 
           const Padding(
             padding: EdgeInsets.only(left: 15),
@@ -146,7 +156,7 @@ class ProfilePage extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-          // ================= COFFEE LIST =================
+          // ===== COFFEE LIST =====
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(12),
