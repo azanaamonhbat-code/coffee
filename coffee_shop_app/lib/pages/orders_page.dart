@@ -14,33 +14,39 @@ class OrdersPage extends StatefulWidget {
 class _OrdersPageState extends State<OrdersPage> {
   final List<String> sizes = ["Жижиг", "Дунд", "Том"];
 
-  bool isLoading = false;
+  final List<Map<String, dynamic>> coffees = [
+    {"name": "Espresso", "type": "Espresso", "price": 15000, "image": "coffee2.jpg"},
+    {"name": "Americano", "type": "Espresso", "price": 12000, "image": "coffee3.jpg"},
+    {"name": "Macchiato", "type": "Espresso", "price": 17000, "image": "coffee10.jpg"},
+    {"name": "Ristretto", "type": "Espresso", "price": 14000, "image": "coffee11.jpg"},
+    {"name": "Doppio", "type": "Espresso", "price": 16000, "image": "coffee24.jpg"},
 
-  final List<Coffee> menu = [
-    Coffee(
-      name: "Americano",
-      description: "Хүчтэй хар кофе",
-      details: "Классик хар кофе",
-      price: 15000,
-      image: "https://images.unsplash.com/photo-1511920170033-f8396924c348",
-    ),
-    Coffee(
-      name: "Latte",
-      description: "Сүүтэй зөөлөн кофе",
-      details: "Кремтэй зөөлөн амт",
-      price: 18000,
-      image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93",
-    ),
-    Coffee(
-      name: "Cappuccino",
-      description: "Хөөс ихтэй кофе",
-      details: "Тэнцвэртэй амт",
-      price: 17000,
-      image: "https://images.unsplash.com/photo-1521302080334-4bebac2763a6",
-    ),
+    {"name": "Cappuccino", "type": "Cappuccino", "price": 16000, "image": "coffee4.jpg"},
+    {"name": "Flat White", "type": "Cappuccino", "price": 17000, "image": "coffee9.jpg"},
+    {"name": "Latte", "type": "Latte", "price": 18000, "image": "coffee7.jpg"},
+    {"name": "Smoothie", "type": "Smoothie", "price": 14000, "image": "coffee19.jpg"},
   ];
 
-  // 🚀 LOCAL ADD
+  late List<Coffee> menu;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMenu();
+  }
+
+  void _loadMenu() {
+    menu = coffees.map((item) => Coffee(
+          name: item['name'],
+          description: item['type'] ?? '',
+          details: '',
+          price: item['price'],
+          image: item['image'],
+        )).toList();
+
+    orders = List.from(menu);
+  }
+
   void addOrder(Coffee coffee) {
     setState(() {
       orders.add(coffee);
@@ -59,7 +65,6 @@ class _OrdersPageState extends State<OrdersPage> {
     });
   }
 
-  // 🚀 SEND TO NODE.JS
   void sendToServer(Coffee coffee) async {
     try {
       await ApiService.sendOrder({
@@ -73,8 +78,7 @@ class _OrdersPageState extends State<OrdersPage> {
   }
 
   void openOrderForm({Coffee? coffee, int? index}) {
-    final nameController =
-        TextEditingController(text: coffee?.name ?? "");
+    final nameController = TextEditingController(text: coffee?.name ?? "");
 
     int qty = 1;
     String selectedSize = "Дунд";
@@ -85,9 +89,7 @@ class _OrdersPageState extends State<OrdersPage> {
       backgroundColor: Colors.transparent,
       builder: (_) {
         return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: SingleChildScrollView(
             child: Container(
               padding: const EdgeInsets.all(20),
@@ -100,99 +102,55 @@ class _OrdersPageState extends State<OrdersPage> {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        "☕ Кофе захиалах",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.brown,
-                        ),
-                      ),
-
+                      const Text("☕ Кофе захиалах",
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.brown)),
                       const SizedBox(height: 15),
-
                       TextField(
                         controller: nameController,
-                        decoration: const InputDecoration(
-                          labelText: "Кофены нэр",
-                        ),
+                        decoration: const InputDecoration(labelText: "Кофены нэр"),
                       ),
-
                       const SizedBox(height: 15),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text("Хэмжээ"),
                           DropdownButton<String>(
                             value: selectedSize,
-                            items: sizes.map((size) {
-                              return DropdownMenuItem(
-                                value: size,
-                                child: Text(size),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setModalState(() {
-                                selectedSize = value!;
-                              });
-                            },
+                            items: sizes.map((size) => DropdownMenuItem(value: size, child: Text(size))).toList(),
+                            onChanged: (value) => setModalState(() => selectedSize = value!),
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 10),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text("Тоо ширхэг"),
                           Row(
                             children: [
-                              IconButton(
-                                onPressed: () {
-                                  if (qty > 1) setModalState(() => qty--);
-                                },
-                                icon: const Icon(Icons.remove_circle),
-                              ),
+                              IconButton(onPressed: () => qty > 1 ? setModalState(() => qty--) : null, icon: const Icon(Icons.remove_circle)),
                               Text("$qty"),
-                              IconButton(
-                                onPressed: () {
-                                  setModalState(() => qty++);
-                                },
-                                icon: const Icon(Icons.add_circle),
-                              ),
+                              IconButton(onPressed: () => setModalState(() => qty++), icon: const Icon(Icons.add_circle)),
                             ],
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 20),
-
                       ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.brown,
-                          minimumSize: const Size(double.infinity, 50),
-                        ),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.brown, minimumSize: const Size(double.infinity, 50)),
                         onPressed: () {
                           final coffeeOrder = Coffee(
                             name: nameController.text,
                             description: "Захиалга",
                             details: "Хэмжээ: $selectedSize | Тоо: $qty",
                             price: 0,
-                            image:
-                                "https://images.unsplash.com/photo-1511920170033-f8396924c348",
+                            image: "https://images.unsplash.com/photo-1511920170033-f8396924c348",
                           );
 
-                          if (coffee == null) {
-                            addOrder(coffeeOrder);
-                          } else {
-                            editOrder(index!, coffeeOrder);
-                          }
+                          if (coffee == null) addOrder(coffeeOrder);
+                          else editOrder(index!, coffeeOrder);
 
-                          // 🚀 SERVER рүү илгээх
                           sendToServer(coffeeOrder);
-
                           Navigator.pop(context);
                         },
                         child: const Text("Захиалга баталгаажуулах"),
@@ -213,9 +171,7 @@ class _OrdersPageState extends State<OrdersPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
       builder: (_) {
         return SingleChildScrollView(
           child: Padding(
@@ -224,27 +180,21 @@ class _OrdersPageState extends State<OrdersPage> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: Image.network(
-                    coffee.image,
+                  child: Image.asset(
+                    'lib/assets/images/${coffee.image}',   // ← lib/ нэмсэн
                     height: 220,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(Icons.coffee, size: 120, color: Colors.brown),
                   ),
                 ),
                 const SizedBox(height: 15),
-                Text(
-                  coffee.name,
-                  style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold),
-                ),
+                Text(coffee.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
-                Text(coffee.description),
+                Text(coffee.description ?? ''),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.brown,
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.brown, minimumSize: const Size(double.infinity, 50)),
                   onPressed: () {
                     Navigator.pop(context);
                     openOrderForm(coffee: coffee);
@@ -263,26 +213,20 @@ class _OrdersPageState extends State<OrdersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F1EC),
-
       appBar: AppBar(
         backgroundColor: const Color(0xFF3E2723),
         title: const Text("☕ Кофе захиалга"),
       ),
-
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.brown,
         onPressed: () => openOrderForm(),
         child: const Icon(Icons.add),
       ),
-
       body: Column(
         children: [
           const Padding(
             padding: EdgeInsets.all(10),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text("☕ Цэс"),
-            ),
+            child: Align(alignment: Alignment.centerLeft, child: Text("☕ Цэс", style: TextStyle(fontSize: 18))),
           ),
 
           SizedBox(
@@ -292,7 +236,6 @@ class _OrdersPageState extends State<OrdersPage> {
               itemCount: menu.length,
               itemBuilder: (context, index) {
                 final coffee = menu[index];
-
                 return GestureDetector(
                   onTap: () => openCoffeeDetail(coffee),
                   child: Container(
@@ -304,8 +247,20 @@ class _OrdersPageState extends State<OrdersPage> {
                     ),
                     child: Column(
                       children: [
-                        Image.network(coffee.image, height: 90, fit: BoxFit.cover),
-                        Text(coffee.name),
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                          child: Image.asset(
+                            'lib/assets/images/${coffee.image}',   // ← lib/ нэмсэн
+                            height: 90,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(Icons.coffee, size: 60, color: Colors.brown),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Text(coffee.name, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        ),
                         Text("${coffee.price} ₮"),
                       ],
                     ),
@@ -316,8 +271,10 @@ class _OrdersPageState extends State<OrdersPage> {
           ),
 
           const Divider(),
-
-          const Text("🛒 Захиалга"),
+          const Padding(
+            padding: EdgeInsets.all(10),
+            child: Align(alignment: Alignment.centerLeft, child: Text("🛒 Захиалга", style: TextStyle(fontSize: 18))),
+          ),
 
           Expanded(
             child: orders.isEmpty
@@ -326,22 +283,14 @@ class _OrdersPageState extends State<OrdersPage> {
                     itemCount: orders.length,
                     itemBuilder: (context, index) {
                       final order = orders[index];
-
                       return ListTile(
                         title: Text(order.name),
-                        subtitle: Text(order.details),
+                        subtitle: Text(order.details ?? ''),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () =>
-                                  openOrderForm(coffee: order, index: index),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () => deleteOrder(index),
-                            ),
+                            IconButton(icon: const Icon(Icons.edit), onPressed: () => openOrderForm(coffee: order, index: index)),
+                            IconButton(icon: const Icon(Icons.delete), onPressed: () => deleteOrder(index)),
                           ],
                         ),
                       );
