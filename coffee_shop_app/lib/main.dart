@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-// 👇 ДАРАА НЬ ЭНЭ 3-ЫГ НЭМНЭ
 import 'pages/home_page.dart';
 import 'pages/orders_page.dart';
 import 'pages/profile_page.dart';
+import 'pages/login_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,13 +16,17 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: MainPage(),
+      home: LoginPage(),
     );
   }
 }
 
+// ================= MAIN PAGE =================
+
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  final String username;
+
+  const MainPage({super.key, required this.username});
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -31,11 +35,18 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int selectedIndex = 0;
 
-  final List<Widget> pages = [
-    const HomePage(),
-    const OrdersPage(),
-    const ProfilePage(),
-  ];
+  late final List<Widget> pages;
+
+  @override
+  void initState() {
+    super.initState();
+
+    pages = [
+      const HomePage(),
+      const OrdersPage(),
+      ProfilePage(username: widget.username), // 👈 username дамжуулж байна
+    ];
+  }
 
   void onItemTapped(int index) {
     setState(() {
@@ -52,18 +63,9 @@ class _MainPageState extends State<MainPage> {
         currentIndex: selectedIndex,
         onTap: onItemTapped,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: "Orders",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profile",
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Orders"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
       ),
     );
