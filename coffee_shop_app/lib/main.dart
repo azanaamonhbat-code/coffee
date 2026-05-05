@@ -44,7 +44,7 @@ class _MainPageState extends State<MainPage> {
     pages = [
       const HomePage(),
       const OrdersPage(),
-      ProfilePage(username: widget.username), // 👈 username дамжуулж байна
+      ProfilePage(username: widget.username),
     ];
   }
 
@@ -54,19 +54,78 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
+  // 🔥 CUSTOM NAV ITEM
+  Widget navItem(IconData icon, String label, int index) {
+    bool isSelected = selectedIndex == index;
+
+    return GestureDetector(
+      onTap: () => onItemTapped(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 16 : 10,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          // 🔥 FIX: бүх item нэг бараан background-той боллоо
+          color: isSelected
+              ? Colors.brown.shade400
+              : const Color(0xFF1C1814),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.white : Colors.grey,
+              size: 24,
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ]
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: pages[selectedIndex],
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: selectedIndex,
-        onTap: onItemTapped,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Orders"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
+      // 🔥 MODERN FLOATING NAVBAR
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Container(
+          height: 70,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1C1814),
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              navItem(Icons.home_rounded, "Нүүр", 0),
+              navItem(Icons.local_cafe_rounded, "Захиалга", 1),
+              navItem(Icons.person_rounded, "Профайл", 2),
+            ],
+          ),
+        ),
       ),
     );
   }
