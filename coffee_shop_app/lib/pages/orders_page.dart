@@ -375,8 +375,6 @@ class _OrdersPageState extends State<OrdersPage> {
                         ),
                       ),
 
-                      // ← Зураас (Divider) арилгалаа
-
                       const Padding(
                         padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
                         child: Align(
@@ -450,12 +448,19 @@ class _OrdersPageState extends State<OrdersPage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.brown.shade700,
-        elevation: 12,
-        child: const Icon(Icons.add, size: 28),
-        onPressed: () => openOrderForm(),
+
+      // ==================== Захиалга нэмэх товч (Жаахан дээшилсэн) ====================
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80), // ← Эндээс дээшлүүлэх хэмжээг тохируулж болно
+        child: FloatingActionButton(
+          backgroundColor: const Color(0xFFEE7C3A),
+          elevation: 12,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          child: const Icon(Icons.add, size: 30, color: Colors.white),
+          onPressed: () => openOrderForm(),
+        ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
