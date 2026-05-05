@@ -238,7 +238,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text("Find your coffee", style: TextStyle(color: Colors.white)),
+        title: const Text("Find your coffee", style: TextStyle(color: Colors.brown)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
     );
