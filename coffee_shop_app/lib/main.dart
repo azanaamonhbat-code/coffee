@@ -54,31 +54,30 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
-  // 🔥 CUSTOM NAV ITEM
+  // 🔥 CUSTOM NAV ITEM - Зургийн загвартай ойрхон
   Widget navItem(IconData icon, String label, int index) {
     bool isSelected = selectedIndex == index;
 
     return GestureDetector(
       onTap: () => onItemTapped(index),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 300),
         padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 16 : 10,
-          vertical: 8,
+          horizontal: isSelected ? 20 : 16,
+          vertical: 10,
         ),
         decoration: BoxDecoration(
-          // 🔥 FIX: бүх item нэг бараан background-той боллоо
-          color: isSelected
-              ? Colors.brown.shade400
-              : const Color(0xFF1C1814),
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected 
+              ? const Color(0xFFEE7C3A)                    // Сонгогдсон үед улбар шар
+              : Colors.transparent,                        // Бусад үед тунгалаг
+          borderRadius: BorderRadius.circular(30),
         ),
         child: Row(
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : Colors.grey,
-              size: 24,
+              color: isSelected ? Colors.white : Colors.white70,
+              size: 26,
             ),
             if (isSelected) ...[
               const SizedBox(width: 8),
@@ -87,6 +86,7 @@ class _MainPageState extends State<MainPage> {
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
+                  fontSize: 15.5,
                 ),
               ),
             ]
@@ -101,24 +101,24 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       body: pages[selectedIndex],
 
-      // 🔥 MODERN FLOATING NAVBAR
+      // 🔥 Bottom Navigation - Зургийн загвартай тааруулсан
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
         child: Container(
-          height: 70,
+          height: 72,
           decoration: BoxDecoration(
-            color: const Color(0xFF1C1814),
-            borderRadius: BorderRadius.circular(30),
+            color: const Color(0xFF2C1810).withOpacity(0.95), // Ар талтай ижил бор
+            borderRadius: BorderRadius.circular(35),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.4),
-                blurRadius: 20,
+                color: Colors.black.withOpacity(0.6),
+                blurRadius: 25,
                 offset: const Offset(0, 10),
               ),
             ],
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               navItem(Icons.home_rounded, "Нүүр", 0),
               navItem(Icons.local_cafe_rounded, "Захиалга", 1),

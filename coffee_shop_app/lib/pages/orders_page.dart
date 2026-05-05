@@ -44,8 +44,6 @@ class _OrdersPageState extends State<OrdersPage> {
               image: item['image'],
             ))
         .toList();
-
-    orders = List.from(menu); 
   }
 
   void addOrder(Coffee coffee) {
@@ -251,7 +249,7 @@ class _OrdersPageState extends State<OrdersPage> {
                     const SizedBox(height: 8),
                     Text(
                       coffee.description,
-                      style: TextStyle(fontSize: 18, color: Colors.brown.shade200), // ← const устгасан
+                      style: TextStyle(fontSize: 18, color: Colors.brown.shade200),
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
@@ -281,143 +279,182 @@ class _OrdersPageState extends State<OrdersPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF12100E),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1C1814),
-        elevation: 0,
-        title: const Text("☕ Кофе Захиалга", style: TextStyle(fontWeight: FontWeight.w600)),
-        centerTitle: true,
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage(
+              "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=2070",
+            ),
+            fit: BoxFit.cover,
+            opacity: 0.85,
+          ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color(0xFF2C1810).withOpacity(0.75),
+                const Color(0xFF2C1810).withOpacity(0.65),
+                const Color(0xFF12100E).withOpacity(0.85),
+              ],
+            ),
+          ),
+          child: Column(
+            children: [
+              AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                title: const Text("☕ Кофе Захиалга", style: TextStyle(fontWeight: FontWeight.w600)),
+                centerTitle: true,
+                foregroundColor: Colors.white,
+              ),
+
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text("☕ Цэс", 
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                        ),
+                      ),
+
+                      SizedBox(
+                        height: 190,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          itemCount: menu.length,
+                          itemBuilder: (context, index) {
+                            final coffee = menu[index];
+                            return GestureDetector(
+                              onTap: () => openCoffeeDetail(coffee),
+                              child: Container(
+                                width: 150,
+                                margin: const EdgeInsets.symmetric(horizontal: 8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1C1814).withOpacity(0.85),
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.4),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                                      child: Image.asset(
+                                        'lib/assets/images/${coffee.image}',
+                                        height: 110,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => const Icon(Icons.coffee, size: 60, color: Colors.brown),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      coffee.name,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 15),
+                                    ),
+                                    Text("${coffee.price} ₮", style: TextStyle(color: Colors.brown.shade200)),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+
+                      // ← Зураас (Divider) арилгалаа
+
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text("🛒 Миний захиалга", 
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                        ),
+                      ),
+
+                      orders.isEmpty
+                          ? const Center(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 80),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.coffee_outlined, size: 80, color: Colors.grey),
+                                    SizedBox(height: 16),
+                                    Text("Захиалга хараахан алга", 
+                                      style: TextStyle(color: Colors.grey, fontSize: 18)),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              itemCount: orders.length,
+                              itemBuilder: (context, index) {
+                                final order = orders[index];
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1C1814).withOpacity(0.9),
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.3),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    title: Text(order.name, style: const TextStyle(fontSize: 17, color: Colors.white)),
+                                    subtitle: Text(order.details ?? '', style: TextStyle(color: Colors.grey.shade400)),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit, color: Colors.brown),
+                                          onPressed: () => openOrderForm(coffee: order, index: index),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, color: Colors.redAccent),
+                                          onPressed: () => deleteOrder(index),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.brown.shade700,
         elevation: 12,
         child: const Icon(Icons.add, size: 28),
         onPressed: () => openOrderForm(),
-      ),
-      body: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text("☕ Цэс", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-            ),
-          ),
-
-          SizedBox(
-            height: 190,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: menu.length,
-              itemBuilder: (context, index) {
-                final coffee = menu[index];
-                return GestureDetector(
-                  onTap: () => openCoffeeDetail(coffee),
-                  child: Container(
-                    width: 150,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1C1814),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.4),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        ClipRRect(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                          child: Image.asset(
-                            'lib/assets/images/${coffee.image}',
-                            height: 110,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(Icons.coffee, size: 60, color: Colors.brown),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          coffee.name,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 15),
-                        ),
-                        Text("${coffee.price} ₮", style: TextStyle(color: Colors.brown.shade200)),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          const Divider(color: Colors.grey, height: 1),
-
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text("🛒 Миний захиалга", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-            ),
-          ),
-
-          Expanded(
-            child: orders.isEmpty
-                ? const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.coffee_outlined, size: 80, color: Colors.grey),
-                        SizedBox(height: 16),
-                        Text("Захиалга хараахан алга", style: TextStyle(color: Colors.grey, fontSize: 18)),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemCount: orders.length,
-                    itemBuilder: (context, index) {
-                      final order = orders[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1C1814),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          title: Text(order.name, style: const TextStyle(fontSize: 17, color: Colors.white)),
-                          subtitle: Text(order.details ?? '', style: TextStyle(color: Colors.grey.shade400)),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.brown),
-                                onPressed: () => openOrderForm(coffee: order, index: index),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.redAccent),
-                                onPressed: () => deleteOrder(index),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
       ),
     );
   }
