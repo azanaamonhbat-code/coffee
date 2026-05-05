@@ -127,97 +127,120 @@ class _HomePageState extends State<HomePage> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F1EC),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage(
+              "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=2070",
+            ),
+            fit: BoxFit.cover,
+            opacity: 0.85,
+          ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color(0xFF2C1810).withOpacity(0.75),
+                const Color(0xFF2C1810).withOpacity(0.65),
+                const Color(0xFF12100E).withOpacity(0.85),
+              ],
+            ),
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20), // AppBar-тай давхцахгүйн тулд
+
+                  const Text(
+                    "Good Morning ☕",
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  const Text(
+                    "Grab your first coffee in the morning",
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Search Bar
+                  TextField(
+                    controller: searchController,
+                    style: const TextStyle(color: Colors.white),
+                    onChanged: (value) => setState(() => searchText = value),
+                    decoration: InputDecoration(
+                      hintText: "Search coffee...",
+                      hintStyle: const TextStyle(color: Colors.grey),
+                      filled: true,
+                      fillColor: const Color(0xFF1C1814),
+                      prefixIcon: const Icon(Icons.search, color: Colors.brown),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Color(0xFF3E2723)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Colors.brown, width: 2),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        category("All"),
+                        category("Espresso"),
+                        category("Cappuccino"),
+                        category("Latte"),
+                        category("Smoothie"),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: filtered.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.72,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                    ),
+                    itemBuilder: (context, index) {
+                      final coffee = filtered[index];
+                      return GestureDetector(
+                        onTap: () => showCoffeeDetail(coffee),
+                        child: coffeeCard(coffee["name"], coffee["price"], coffee["image"]),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      // AppBar-г тунгалаг болгож background-тай нийлүүлэв
       appBar: AppBar(
-        backgroundColor: const Color(0xFF3E2723),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text("Find your coffee", style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.brown))
-          : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Greeting
-                    const Text(
-                      "Good Morning ☕",
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.brown),
-                    ),
-                    const Text(
-                      "Grab your first coffee in the morning",
-                      style: TextStyle(fontSize: 16, color: Colors.brown),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Search
-                    TextField(
-                      controller: searchController,
-                      onChanged: (value) => setState(() => searchText = value),
-                      decoration: InputDecoration(
-                        hintText: "Search coffee...",
-                        filled: true,
-                        fillColor: Colors.white,
-                        prefixIcon: const Icon(Icons.search, color: Colors.brown),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: Color(0xFFBCAAA4)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: Colors.brown, width: 2),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    // 3D Category Chips
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          category("All"),
-                          category("Espresso"),
-                          category("Cappuccino"),
-                          category("Latte"),
-                          category("Smoothie"),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    // Grid
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: filtered.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.78,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                      ),
-                      itemBuilder: (context, index) {
-                        final coffee = filtered[index];
-                        return GestureDetector(
-                          onTap: () => showCoffeeDetail(coffee),
-                          child: coffeeCard(coffee["name"], coffee["price"], coffee["image"]),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
     );
   }
 
@@ -246,13 +269,11 @@ class _HomePageState extends State<HomePage> {
                 ),
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
-            // Main shadow
             BoxShadow(
               color: Colors.brown.withOpacity(isActive ? 0.45 : 0.18),
               blurRadius: 10,
               offset: const Offset(0, 6),
             ),
-            // Highlight (3D effect)
             BoxShadow(
               color: Colors.white.withOpacity(isActive ? 0.25 : 0.7),
               blurRadius: 8,
@@ -285,43 +306,86 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ================== COFFEE CARD ==================
+  // ================== 3D COFFEE CARD ==================
   Widget coffeeCard(String name, int price, String image) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFF1C1814),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.brown.withOpacity(0.12),
+            color: Colors.black.withOpacity(0.6),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.08),
             blurRadius: 10,
-            offset: const Offset(0, 5),
+            offset: const Offset(-4, -4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            borderRadius: BorderRadius.circular(20),
             child: AspectRatio(
-              aspectRatio: 1.2,
+              aspectRatio: 1.05,
               child: Image.asset(
                 "lib/assets/images/$image",
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.coffee, size: 80, color: Colors.brown),
+                errorBuilder: (_, __, ___) => Container(
+                  color: Colors.brown.shade700,
+                  child: const Icon(Icons.coffee, size: 80, color: Colors.white70),
+                ),
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold, fontSize: 15)),
-                const SizedBox(height: 6),
-                Text("$price ₮", style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16)),
-              ],
+
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Color(0xFF1C1814)],
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "Best Coffee",
+                    style: TextStyle(
+                      color: Color(0xFF9E9E9E),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "$price ₮",
+                    style: const TextStyle(
+                      color: Color(0xFFFFC107),
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
