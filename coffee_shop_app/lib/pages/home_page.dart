@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -14,6 +15,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String selectedCategory = "All";
   String searchText = "";
+  static const _pageDark = Color(0xFF12100E);
+  static const _panelDark = Color(0xFF1C1814);
+  static const _accent = Color(0xFFC67C4E);
 
   final TextEditingController searchController = TextEditingController();
 
@@ -36,145 +40,158 @@ class _HomePageState extends State<HomePage> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF12100E),
+      backgroundColor: _pageDark,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
           "Find your coffee",
           style: TextStyle(
-            color: Colors.brown,
-            fontSize: 36,
+            color: _accent,
+            fontSize: 22,
             fontWeight: FontWeight.w700,
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage(
-              "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=2070",
-            ),
-            fit: BoxFit.cover,
-            opacity: 0.85,
-          ),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                const Color(0xFF2C1810).withOpacity(0.75),
-                const Color(0xFF2C1810).withOpacity(0.65),
-                const Color(0xFF12100E).withOpacity(0.85),
-              ],
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          ImageFiltered(
+            imageFilter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
+            child: const DecoratedBox(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('lib/assets/images/coffee21.jpg'),
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
           ),
-          child: LayoutBuilder(
-            builder: (context, viewport) {
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: viewport.maxHeight),
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 20),
-                        const Text(
-                          "Good Morning",
-                          style: TextStyle(
-                            fontSize: 54,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const Text(
-                          "Grab your first coffee in the morning",
-                          style: TextStyle(fontSize: 30, color: Colors.grey),
-                        ),
-                        const SizedBox(height: 22),
-                        TextField(
-                          controller: searchController,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 30,
-                          ),
-                          onChanged: (value) =>
-                              setState(() => searchText = value),
-                          decoration: InputDecoration(
-                            hintText: "Search coffee...",
-                            hintStyle: const TextStyle(
-                              color: Colors.grey,
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.24),
+                  const Color(0xFF2C1810).withValues(alpha: 0.62),
+                  _pageDark.withValues(alpha: 0.9),
+                ],
+              ),
+            ),
+          ),
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, viewport) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: viewport.maxHeight),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Good Morning",
+                            style: TextStyle(
                               fontSize: 28,
-                            ),
-                            filled: true,
-                            fillColor: const Color(0xFF1C1814),
-                            prefixIcon: const Icon(
-                              Icons.search,
-                              color: Colors.brown,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 18,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide.none,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 25),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              category("All"),
-                              category("Espresso"),
-                              category("Cappuccino"),
-                              category("Latte"),
-                              category("Smoothie"),
-                              category("Americano"),
-                            ],
+                          const Text(
+                            "Grab your first coffee in the morning",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white70,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 25),
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            final width = constraints.maxWidth;
-                            final crossAxisCount = width >= 1000
-                                ? 4
-                                : width >= 700
-                                ? 3
-                                : 2;
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: searchController,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                            onChanged: (value) =>
+                                setState(() => searchText = value),
+                            decoration: InputDecoration(
+                              hintText: "Search coffee...",
+                              hintStyle: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
+                              filled: true,
+                              fillColor: _panelDark.withValues(alpha: 0.88),
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: _accent,
+                                size: 20,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                category("All"),
+                                category("Espresso"),
+                                category("Cappuccino"),
+                                category("Latte"),
+                                category("Smoothie"),
+                                category("Americano"),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final width = constraints.maxWidth;
+                              final crossAxisCount = width >= 1100
+                                  ? 5
+                                  : width >= 820
+                                  ? 4
+                                  : width >= 560
+                                  ? 3
+                                  : 2;
 
-                            return GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: filtered.length,
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: crossAxisCount,
-                                    childAspectRatio: 0.72,
-                                    crossAxisSpacing: 14,
-                                    mainAxisSpacing: 14,
-                                  ),
-                              itemBuilder: (context, index) {
-                                return coffeeCard(filtered[index]);
-                              },
-                            );
-                          },
-                        ),
-                      ],
+                              return GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: filtered.length,
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: crossAxisCount,
+                                      childAspectRatio: 0.78,
+                                      crossAxisSpacing: 12,
+                                      mainAxisSpacing: 12,
+                                    ),
+                                itemBuilder: (context, index) {
+                                  return coffeeCard(filtered[index]);
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -185,17 +202,17 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: () => setState(() => selectedCategory = name),
       child: Container(
-        margin: const EdgeInsets.only(right: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? Colors.brown : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          color: isActive ? _accent : Colors.white.withValues(alpha: 0.88),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           name,
           style: TextStyle(
             color: isActive ? Colors.white : Colors.brown,
-            fontSize: 28,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -211,20 +228,28 @@ class _HomePageState extends State<HomePage> {
       onTap: () => showCoffeeDetail(coffee),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1C1814),
-          borderRadius: BorderRadius.circular(20),
+          color: _panelDark.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.22),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           children: [
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
+                  top: Radius.circular(14),
                 ),
                 child: coffeeImage(coffee),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 7),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
@@ -234,21 +259,21 @@ class _HomePageState extends State<HomePage> {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 30,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               "$price MNT",
               style: const TextStyle(
-                color: Colors.amber,
-                fontSize: 28,
+                color: _accent,
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -289,10 +314,10 @@ class _HomePageState extends State<HomePage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
-        height: MediaQuery.of(context).size.height * 0.78,
+        height: MediaQuery.of(context).size.height * 0.68,
         decoration: const BoxDecoration(
           color: Color(0xFF1C1814),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -300,23 +325,23 @@ class _HomePageState extends State<HomePage> {
             children: [
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(28),
+                  top: Radius.circular(22),
                 ),
                 child: SizedBox(
-                  height: 290,
+                  height: 210,
                   width: double.infinity,
                   child: coffeeImage(coffee),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(22),
+                padding: const EdgeInsets.all(18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       name,
                       style: const TextStyle(
-                        fontSize: 46,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -325,15 +350,15 @@ class _HomePageState extends State<HomePage> {
                     Text(
                       "$type  |  $price MNT",
                       style: TextStyle(
-                        fontSize: 30,
+                        fontSize: 15,
                         color: Colors.brown.shade200,
                       ),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 16),
                     const Text(
                       "Ingredients",
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
@@ -342,16 +367,16 @@ class _HomePageState extends State<HomePage> {
                     Text(
                       ingredients,
                       style: const TextStyle(
-                        fontSize: 28,
+                        fontSize: 14,
                         height: 1.4,
                         color: Colors.white70,
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 14),
                     const Text(
                       "Description",
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
@@ -360,7 +385,7 @@ class _HomePageState extends State<HomePage> {
                     Text(
                       description,
                       style: const TextStyle(
-                        fontSize: 28,
+                        fontSize: 14,
                         height: 1.4,
                         color: Colors.white70,
                       ),
