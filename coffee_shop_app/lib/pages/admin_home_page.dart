@@ -1,4 +1,8 @@
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+
 import '../data/coffee_store.dart';
 
 class AdminHomePage extends StatefulWidget {
@@ -15,184 +19,148 @@ class _AdminHomePageState extends State<AdminHomePage> {
   final descriptionController = TextEditingController();
   final imageController = TextEditingController();
   final searchController = TextEditingController();
+  Uint8List? pickedImageBytes;
+  String? pickedImageName;
 
-<<<<<<< HEAD
-  String selectedCategory = 'All';
-  String searchQuery = ''; // Хайлтын утга хадгалах
-  final List<String> categories = ['All', 'Espresso', 'Cappuccino', 'Latte', 'Americano'];
-
-  // Кофе нэмэх функц
-=======
   String selectedCategory = 'Espresso';
+  String filterCategory = 'All';
+  String searchQuery = '';
+  int? editIndex;
 
   final List<String> categories = [
     'Espresso',
     'Cappuccino',
     'Latte',
     'Smoothie',
-    'Americano'
+    'Americano',
   ];
 
-  int? editIndex;
+  List<Map<String, dynamic>> get filteredCoffees {
+    return CoffeeStore.coffees.where((coffee) {
+      final matchesCategory =
+          filterCategory == 'All' || coffee['type'] == filterCategory;
+      final matchesSearch = coffee['name'].toString().toLowerCase().contains(
+        searchQuery.toLowerCase(),
+      );
+      return matchesCategory && matchesSearch;
+    }).toList();
+  }
 
-  // ================= ADD =================
->>>>>>> 8ce0fc7dfcc3720c7a2b426ab4d362017c10481f
-  void addCoffee() {
-    if (nameController.text.isEmpty || priceController.text.isEmpty) {
+  @override
+  void dispose() {
+    nameController.dispose();
+    priceController.dispose();
+    ingredientsController.dispose();
+    descriptionController.dispose();
+    imageController.dispose();
+    searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> addCoffee() async {
+    if (nameController.text.trim().isEmpty ||
+        priceController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Нэр болон үнийг оруулна уу!")),
       );
       return;
     }
 
-<<<<<<< HEAD
-    setState(() {
-      CoffeeStore.coffees.add({
-        "name": nameController.text,
-        "price": double.tryParse(priceController.text) ?? 0.0,
-        "type": selectedCategory == 'All' ? 'Espresso' : selectedCategory,
-        "ingredients": ingredientsController.text,
-        "description": descriptionController.text,
-        "image": imageController.text.isEmpty
-            ? "assets/images/espresso.png"
-            : imageController.text,
-      });
-=======
-    CoffeeStore.coffees.add({
-      "name": nameController.text,
-      "price": int.tryParse(priceController.text) ?? 0,
-      "type": selectedCategory,
-      "ingredients": ingredientsController.text,
-      "description": descriptionController.text,
-      "image": imageController.text.isEmpty
-          ? "assets/images/default.png"
-          : imageController.text,
->>>>>>> 8ce0fc7dfcc3720c7a2b426ab4d362017c10481f
-    });
+    await CoffeeStore.addCoffee(formCoffee());
+    setState(() {});
 
     clearFields();
     Navigator.pop(context);
-<<<<<<< HEAD
-=======
-
-    setState(() {});
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("☕ Кофе нэмэгдлээ")),
-    );
->>>>>>> 8ce0fc7dfcc3720c7a2b426ab4d362017c10481f
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Кофе нэмэгдлээ")));
   }
 
-  // ================= EDIT OPEN =================
-  void editCoffee(int index) {
-    final item = CoffeeStore.coffees[index];
+  void editCoffee(Map<String, dynamic> item) {
+    editIndex = CoffeeStore.coffees.indexOf(item);
 
-    setState(() {
-      nameController.text = item["name"] ?? "";
-      priceController.text = item["price"].toString();
-      ingredientsController.text = item["ingredients"] ?? "";
-      descriptionController.text = item["description"] ?? "";
-      selectedCategory = item["type"];
-      editIndex = index;
-    });
+    nameController.text = item["name"]?.toString() ?? "";
+    priceController.text = item["price"]?.toString() ?? "";
+    ingredientsController.text = item["ingredients"]?.toString() ?? "";
+    descriptionController.text = item["description"]?.toString() ?? "";
+    imageController.text = item["image"]?.toString() ?? "";
+    pickedImageBytes = item["imageBytes"] as Uint8List?;
+    pickedImageName = item["imageName"]?.toString();
+    selectedCategory = categories.contains(item["type"])
+        ? item["type"].toString()
+        : 'Espresso';
 
     showCoffeeSheet(isEdit: true);
   }
 
-  // ================= SAVE EDIT =================
-  void saveEdit() {
+  Future<void> saveEdit() async {
     if (editIndex == null) return;
 
-    CoffeeStore.coffees[editIndex!] = {
-      "name": nameController.text,
-      "price": int.tryParse(priceController.text) ?? 0,
-      "type": selectedCategory,
-      "ingredients": ingredientsController.text,
-      "description": descriptionController.text,
-      "image": imageController.text.isEmpty
-          ? "assets/images/default.png"
-          : imageController.text,
-    };
+    await CoffeeStore.updateCoffee(editIndex!, formCoffee());
+    setState(() {});
 
     clearFields();
     Navigator.pop(context);
-
-    setState(() {});
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("✏️ Засагдлаа")),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Кофе засагдлаа")));
   }
 
-  // ================= DELETE =================
-  void deleteCoffee(int index) {
-    CoffeeStore.coffees.removeAt(index);
+  Map<String, dynamic> formCoffee() {
+    return {
+      "name": nameController.text.trim(),
+      "price": int.tryParse(priceController.text.trim()) ?? 0,
+      "type": selectedCategory,
+      "ingredients": ingredientsController.text.trim(),
+      "description": descriptionController.text.trim(),
+      "image": imageController.text.trim().isEmpty
+          ? "coffee1.jpg"
+          : imageController.text.trim(),
+      "imageBytes": pickedImageBytes,
+      "imageName": pickedImageName,
+    };
+  }
+
+  Future<void> deleteCoffee(Map<String, dynamic> item) async {
+    await CoffeeStore.deleteCoffee(CoffeeStore.coffees.indexOf(item));
     setState(() {});
   }
 
-  // ================= CLEAR =================
   void clearFields() {
     nameController.clear();
     priceController.clear();
     ingredientsController.clear();
     descriptionController.clear();
     imageController.clear();
+    pickedImageBytes = null;
+    pickedImageName = null;
+    selectedCategory = 'Espresso';
     editIndex = null;
   }
 
-<<<<<<< HEAD
-  // Шүүгдсэн жагсаалт авах функц
-  List get filteredCoffees {
-    return CoffeeStore.coffees.where((coffee) {
-      final matchesCategory = selectedCategory == 'All' || coffee['type'] == selectedCategory;
-      final matchesSearch = coffee['name'].toString().toLowerCase().contains(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    }).toList();
+  Future<void> pickImage() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
+
+    if (result == null || result.files.single.bytes == null) return;
+
+    setState(() {
+      pickedImageBytes = result.files.single.bytes;
+      pickedImageName = result.files.single.name;
+      imageController.text = pickedImageName ?? '';
+    });
   }
 
-  void showAddCoffeeSheet() {
-=======
-  // ================= BOTTOM SHEET =================
   void showCoffeeSheet({bool isEdit = false}) {
->>>>>>> 8ce0fc7dfcc3720c7a2b426ab4d362017c10481f
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF31241e),
+      backgroundColor: const Color(0xFF31241E),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
-<<<<<<< HEAD
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          left: 20, right: 20, top: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text("Шинэ кофе нэмэх", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
-              _buildInput(nameController, "Нэр", Icons.coffee),
-              _buildInput(priceController, "Үнэ (жишээ: 4.40)", Icons.attach_money, number: true),
-              _buildInput(ingredientsController, "Амт / Орц", Icons.bubble_chart),
-              _buildInput(imageController, "Зураг (URL/Path)", Icons.image),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFc67c4e),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
-                  onPressed: addCoffee,
-                  child: const Text("Бүртгэх", style: TextStyle(color: Colors.white, fontSize: 16)),
-                ),
-              )
-            ],
-=======
       builder: (context) {
         return Padding(
           padding: EdgeInsets.only(
@@ -206,259 +174,226 @@ class _AdminHomePageState extends State<AdminHomePage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  isEdit ? "Кофе засах" : "Кофе нэмэх",
-                  style: const TextStyle(color: Colors.white, fontSize: 20),
+                  isEdit ? "Кофе засах" : "Шинэ кофе нэмэх",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                const SizedBox(height: 15),
-
+                const SizedBox(height: 18),
                 _buildInput(nameController, "Нэр", Icons.coffee),
-                _buildInput(priceController, "Үнэ", Icons.money,
-                    number: true),
-
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  margin: const EdgeInsets.only(bottom: 15),
-                  decoration: BoxDecoration(
-                    color: Colors.white10,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: selectedCategory,
-                      dropdownColor: const Color(0xFF2d2421),
-                      style: const TextStyle(color: Colors.white),
-                      items: categories
-                          .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e),
-                              ))
-                          .toList(),
-                      onChanged: (val) {
-                        setState(() {
-                          selectedCategory = val!;
-                        });
-                      },
-                    ),
-                  ),
+                _buildInput(
+                  priceController,
+                  "Үнэ",
+                  Icons.attach_money,
+                  number: true,
                 ),
-
+                _buildCategoryDropdown(),
                 _buildInput(ingredientsController, "Орц", Icons.list),
-                _buildInput(descriptionController, "Тайлбар", Icons.description),
-
-                const SizedBox(height: 10),
-
+                _buildInput(descriptionController, "Тайлбар", Icons.notes),
+                _buildImagePicker(),
+                const SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,
+                  height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFc67c4e),
+                      backgroundColor: const Color(0xFFC67C4E),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                     onPressed: isEdit ? saveEdit : addCoffee,
-                    child: Text(isEdit ? "Хадгалах" : "Нэмэх"),
+                    child: Text(
+                      isEdit ? "Хадгалах" : "Нэмэх",
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
-                )
+                ),
               ],
             ),
           ),
         );
       },
-    );
+    ).whenComplete(clearFields);
   }
 
-  // ================= UI =================
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1c1614),
-      appBar: AppBar(
-        title: const Text("Admin Panel 👑"),
-        backgroundColor: const Color(0xFF1c1614),
-        foregroundColor: Colors.white,
+  Widget _buildCategoryDropdown() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      margin: const EdgeInsets.only(bottom: 15),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(14),
       ),
-
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFc67c4e),
-        onPressed: () => showCoffeeSheet(isEdit: false),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-
-      body: ListView.builder(
-        padding: const EdgeInsets.all(15),
-        itemCount: CoffeeStore.coffees.length,
-        itemBuilder: (context, index) {
-          final item = CoffeeStore.coffees[index];
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white10,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              title: Text(
-                item['name'],
-                style: const TextStyle(color: Colors.white),
-              ),
-              subtitle: Text(
-                "${item['type']} • ${item['price']}₮",
-                style: const TextStyle(color: Colors.white60),
-              ),
-
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.orange),
-                    onPressed: () => editCoffee(index),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => deleteCoffee(index),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // ================= INPUT =================
-  Widget _buildInput(TextEditingController controller, String label,
-      IconData icon,
-      {bool number = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextField(
-        controller: controller,
-        keyboardType: number ? TextInputType.number : TextInputType.text,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(color: Colors.white60),
-          prefixIcon: Icon(icon, color: const Color(0xFFc67c4e)),
-          filled: true,
-          fillColor: Colors.white10,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
->>>>>>> 8ce0fc7dfcc3720c7a2b426ab4d362017c10481f
-          ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selectedCategory,
+          dropdownColor: const Color(0xFF2D2421),
+          style: const TextStyle(color: Colors.white),
+          items: categories
+              .map(
+                (category) =>
+                    DropdownMenuItem(value: category, child: Text(category)),
+              )
+              .toList(),
+          onChanged: (value) {
+            if (value == null) return;
+            setState(() => selectedCategory = value);
+          },
         ),
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final displayedItems = filteredCoffees; // Шүүгдсэн дата
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF31241e),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Хайлтын хэсэг
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      height: 55,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFb67b4c).withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: TextField(
-                        controller: searchController,
-                        onChanged: (value) => setState(() => searchQuery = value),
-                        style: const TextStyle(color: Colors.white),
-                        decoration: const InputDecoration(
-                          hintText: "Search coffee...",
-                          hintStyle: TextStyle(color: Colors.white60),
-                          icon: Icon(Icons.search, color: Colors.white60),
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 15),
-                  Container(
-                    height: 55, width: 55,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFc67c4e),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: const Icon(Icons.tune, color: Colors.white),
-                  )
-                ],
-              ),
-            ),
-
-            // Категори
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(left: 20, bottom: 20),
-              child: Row(
-                children: categories.map((cat) {
-                  bool isSelected = selectedCategory == cat;
-                  return GestureDetector(
-                    onTap: () => setState(() => selectedCategory = cat),
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFFc67c4e) : Colors.white10,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        cat,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.white60,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-
-            // Жагсаалт
-            Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.72,
-                  crossAxisSpacing: 15,
-                  mainAxisSpacing: 15,
+  Widget _buildImagePicker() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.image, color: Color(0xFFC67C4E)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  pickedImageName ?? "Notebook-оос зураг сонгох",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white70),
                 ),
-                itemCount: displayedItems.length,
-                itemBuilder: (context, index) {
-                  final item = displayedItems[index];
-                  return _buildCoffeeCard(item);
-                },
+              ),
+              TextButton.icon(
+                onPressed: pickImage,
+                icon: const Icon(Icons.folder_open, size: 18),
+                label: const Text("Сонгох"),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFC67C4E),
+                ),
+              ),
+            ],
+          ),
+          if (pickedImageBytes != null) ...[
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.memory(
+                pickedImageBytes!,
+                height: 130,
+                width: double.infinity,
+                fit: BoxFit.cover,
               ),
             ),
           ],
-        ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final displayedItems = filteredCoffees;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF31241E),
+      appBar: AppBar(
+        title: const Text("Admin Panel"),
+        backgroundColor: const Color(0xFF31241E),
+        foregroundColor: Colors.white,
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: searchController,
+              onChanged: (value) => setState(() => searchQuery = value),
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: "Search coffee...",
+                hintStyle: const TextStyle(color: Colors.white60),
+                prefixIcon: const Icon(Icons.search, color: Colors.white60),
+                filled: true,
+                fillColor: const Color(0xFFB67B4C).withOpacity(0.45),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 14),
+            child: Row(
+              children: ['All', ...categories].map((category) {
+                final isSelected = filterCategory == category;
+                return GestureDetector(
+                  onTap: () => setState(() => filterCategory = category),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? const Color(0xFFC67C4E)
+                          : Colors.white10,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      category,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.white60,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 90),
+              itemCount: displayedItems.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.72,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
+              ),
+              itemBuilder: (context, index) {
+                return _buildCoffeeCard(displayedItems[index]);
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFc67c4e),
-        onPressed: showAddCoffeeSheet,
+        backgroundColor: const Color(0xFFC67C4E),
+        onPressed: () => showCoffeeSheet(),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  Widget _buildCoffeeCard(Map item) {
+  Widget _buildCoffeeCard(Map<String, dynamic> item) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF3c2a21),
+        color: const Color(0xFF3C2A21),
         borderRadius: BorderRadius.circular(20),
       ),
       padding: const EdgeInsets.all(12),
@@ -466,69 +401,106 @@ class _AdminHomePageState extends State<AdminHomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: Image.asset(
-                    "assets/images/espresso.png",
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                  ),
-                ),
-                Positioned(
-                  right: 0,
-                  child: IconButton(
-                    icon: const Icon(Icons.cancel, color: Colors.redAccent, size: 24),
-                    onPressed: () {
-                      setState(() {
-                        // Үндсэн жагсаалтаас нэрээр нь шүүж устгах
-                        CoffeeStore.coffees.removeWhere((element) => element == item);
-                      });
-                    },
-                  ),
-                ),
-              ],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: coffeeImage(item),
             ),
           ),
           const SizedBox(height: 10),
-          Text(item['name'], style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold), maxLines: 1),
-          Text(item['ingredients'] ?? "Choose Flavor", style: const TextStyle(color: Colors.white38, fontSize: 12)),
-          const Spacer(),
+          Text(
+            item['name']?.toString() ?? '',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            item['type']?.toString() ?? '',
+            style: const TextStyle(color: Colors.white54, fontSize: 12),
+          ),
+          const SizedBox(height: 8),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("\$${item['price']}", style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFc67c4e),
-                  borderRadius: BorderRadius.circular(10),
+              Expanded(
+                child: Text(
+                  "${item['price']} MNT",
+                  style: const TextStyle(
+                    color: Colors.amber,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                child: const Icon(Icons.add, color: Colors.white, size: 20),
-              )
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.edit, color: Colors.orange),
+                onPressed: () => editCoffee(item),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                onPressed: () => deleteCoffee(item),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildInput(TextEditingController controller, String label, IconData icon, {bool number = false}) {
+  String imagePath(String image) {
+    if (image.startsWith("lib/assets/images/")) return image;
+    if (image.startsWith("assets/images/")) return "lib/$image";
+    return "lib/assets/images/$image";
+  }
+
+  Widget coffeeImage(Map<String, dynamic> item) {
+    final bytes = item['imageBytes'] as Uint8List?;
+    if (bytes != null) {
+      return Image.memory(bytes, width: double.infinity, fit: BoxFit.cover);
+    }
+
+    return Image.asset(
+      imagePath(item['image']?.toString() ?? ''),
+      width: double.infinity,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Container(
+        color: Colors.black26,
+        child: const Center(
+          child: Icon(Icons.coffee, color: Colors.white54, size: 52),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInput(
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    bool number = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextField(
         controller: controller,
-        keyboardType: number ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
+        keyboardType: number ? TextInputType.number : TextInputType.text,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white38),
-          prefixIcon: Icon(icon, color: const Color(0xFFc67c4e)),
+          labelStyle: const TextStyle(color: Colors.white54),
+          prefixIcon: Icon(icon, color: const Color(0xFFC67C4E)),
           filled: true,
-          fillColor: Colors.white.withOpacity(0.05),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: const BorderSide(color: Color(0xFFc67c4e))),
+          fillColor: Colors.white.withOpacity(0.06),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Color(0xFFC67C4E)),
+          ),
         ),
       ),
     );
