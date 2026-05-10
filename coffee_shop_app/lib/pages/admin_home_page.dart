@@ -16,6 +16,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   final imageController = TextEditingController();
 
   String selectedCategory = 'Espresso';
+
   final List<String> categories = [
     'Espresso',
     'Cappuccino',
@@ -24,45 +25,97 @@ class _AdminHomePageState extends State<AdminHomePage> {
     'Americano'
   ];
 
+  int? editIndex;
+
+  // ================= ADD =================
   void addCoffee() {
     if (nameController.text.isEmpty || priceController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Нэр болон үнийг заавал оруулна уу!")),
+        const SnackBar(content: Text("Нэр болон үнийг оруулна уу!")),
       );
       return;
     }
 
-    setState(() {
-      CoffeeStore.coffees.add({
-        "name": nameController.text,
-        "price": int.tryParse(priceController.text) ?? 0,
-        "type": selectedCategory,
-        "ingredients": ingredientsController.text,
-        "description": descriptionController.text,
-        "image": imageController.text.isEmpty
-            ? "assets/images/default.png"
-            : imageController.text,
-      });
+    CoffeeStore.coffees.add({
+      "name": nameController.text,
+      "price": int.tryParse(priceController.text) ?? 0,
+      "type": selectedCategory,
+      "ingredients": ingredientsController.text,
+      "description": descriptionController.text,
+      "image": imageController.text.isEmpty
+          ? "assets/images/default.png"
+          : imageController.text,
     });
 
     clearFields();
-
     Navigator.pop(context);
 
+    setState(() {});
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("☕ Кофе амжилттай нэмэгдлээ!")),
+      const SnackBar(content: Text("☕ Кофе нэмэгдлээ")),
     );
   }
 
+  // ================= EDIT OPEN =================
+  void editCoffee(int index) {
+    final item = CoffeeStore.coffees[index];
+
+    setState(() {
+      nameController.text = item["name"] ?? "";
+      priceController.text = item["price"].toString();
+      ingredientsController.text = item["ingredients"] ?? "";
+      descriptionController.text = item["description"] ?? "";
+      selectedCategory = item["type"];
+      editIndex = index;
+    });
+
+    showCoffeeSheet(isEdit: true);
+  }
+
+  // ================= SAVE EDIT =================
+  void saveEdit() {
+    if (editIndex == null) return;
+
+    CoffeeStore.coffees[editIndex!] = {
+      "name": nameController.text,
+      "price": int.tryParse(priceController.text) ?? 0,
+      "type": selectedCategory,
+      "ingredients": ingredientsController.text,
+      "description": descriptionController.text,
+      "image": imageController.text.isEmpty
+          ? "assets/images/default.png"
+          : imageController.text,
+    };
+
+    clearFields();
+    Navigator.pop(context);
+
+    setState(() {});
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("✏️ Засагдлаа")),
+    );
+  }
+
+  // ================= DELETE =================
+  void deleteCoffee(int index) {
+    CoffeeStore.coffees.removeAt(index);
+    setState(() {});
+  }
+
+  // ================= CLEAR =================
   void clearFields() {
     nameController.clear();
     priceController.clear();
     ingredientsController.clear();
     descriptionController.clear();
     imageController.clear();
+    editIndex = null;
   }
 
-  void showAddCoffeeSheet() {
+  // ================= BOTTOM SHEET =================
+  void showCoffeeSheet({bool isEdit = false}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -82,14 +135,15 @@ class _AdminHomePageState extends State<AdminHomePage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  "Кофе нэмэх",
-                  style: TextStyle(color: Colors.white, fontSize: 20),
+                Text(
+                  isEdit ? "Кофе засах" : "Кофе нэмэх",
+                  style: const TextStyle(color: Colors.white, fontSize: 20),
                 ),
                 const SizedBox(height: 15),
 
                 _buildInput(nameController, "Нэр", Icons.coffee),
-                _buildInput(priceController, "Үнэ", Icons.money, number: true),
+                _buildInput(priceController, "Үнэ", Icons.money,
+                    number: true),
 
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -129,8 +183,8 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFc67c4e),
                     ),
-                    onPressed: addCoffee,
-                    child: const Text("Нэмэх"),
+                    onPressed: isEdit ? saveEdit : addCoffee,
+                    child: Text(isEdit ? "Хадгалах" : "Нэмэх"),
                   ),
                 )
               ],
@@ -141,6 +195,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
     );
   }
 
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,10 +206,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
         foregroundColor: Colors.white,
       ),
 
-      // ⭐ Floating + button
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFc67c4e),
-        onPressed: showAddCoffeeSheet,
+        onPressed: () => showCoffeeSheet(isEdit: false),
         child: const Icon(Icons.add, color: Colors.white),
       ),
 
@@ -180,13 +234,19 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 "${item['type']} • ${item['price']}₮",
                 style: const TextStyle(color: Colors.white60),
               ),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () {
-                  setState(() {
-                    CoffeeStore.coffees.removeAt(index);
-                  });
-                },
+
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.orange),
+                    onPressed: () => editCoffee(index),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => deleteCoffee(index),
+                  ),
+                ],
               ),
             ),
           );
@@ -195,7 +255,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
     );
   }
 
-  Widget _buildInput(TextEditingController controller, String label, IconData icon,
+  // ================= INPUT =================
+  Widget _buildInput(TextEditingController controller, String label,
+      IconData icon,
       {bool number = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
